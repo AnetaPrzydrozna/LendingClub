@@ -14,7 +14,7 @@ model_glm<-glm(loan_train$loan_status~., family = "binomial",data=loan_train)
 #summary(model_glm)
 step_glm<-stepAIC(model_glm ,steps =500) 
 model_step<-glm( formula =step_glm$formula , family = "binomial",data=loan_train)  #logistic regression stepwise
-#model_glm<-train(formula=step_glm$formula , method = "glmnet",data=loan_train)
+#model_step<-train(formula=step_glm$formula , method = "glmnet",data=loan_train)
 
 
 
@@ -23,19 +23,19 @@ model_step<-glm( formula =step_glm$formula , family = "binomial",data=loan_train
 
 
 # segregate continuous and factor variables
-factor_vars <- c ("term", "grade", "emp_length")  # other data have too many labels
+factor_vars <- c ("term", "grade", "emp_length") # other factor features have too many labels
 
 continuous_vars <- c("loan_amnt", "int_rate","installment", "annual_inc", "dti", "inq_last_6mths","revol_bal","revol_util")
 
-iv_df <- data.frame(VARS=c(factor_vars, continuous_vars), IV=numeric(13))  # init for IV results
-
+iv_df <- data.frame(VARS=c(factor_vars, continuous_vars), IV=numeric(11))  # init for IV results
+#11 is sum of factor and continous vars
 loan_train$loan_status<-ifelse(loan_train$loan_status=="1",1,0)
 loan_test$loan_status<-ifelse(loan_test$loan_status=="1",1,0)
 
 # compute IV for categoricals
 for(factor_var in factor_vars){
   smb <- smbinning.factor(loan_train, y="loan_status", x=factor_var)  
-  if(class(smb) != "character"){ # heck if some error occured
+  if(class(smb) != "character"){ 
     iv_df[iv_df$VARS == factor_var, "IV"] <- smb$iv
   }
 }
@@ -43,7 +43,7 @@ for(factor_var in factor_vars){
 # compute IV for continuous vars
 for(continuous_var in continuous_vars){
   smb <- smbinning(loan_train, y="loan_status",  x=continuous_var)  
-  if(class(smb) != "character"){  # any error while calculating scores.
+  if(class(smb) != "character"){  
     iv_df[iv_df$VARS == continuous_var, "IV"] <- smb$iv
   }
 }
@@ -55,7 +55,6 @@ model_iv<-glm( loan_status~grade+int_rate+term+dti, family = "binomial",data=loa
 
 
 ######################################### XGBoost stands for eXtreme Gradient Boosting
-
 #inspired: https://rstudio-pubs-static.s3.amazonaws.com/203258_d20c1a34bc094151a0a1e4f4180c5f6f.html
 
 #str(loan)
@@ -66,14 +65,14 @@ loan_test_num<-loan_test[,c(1,3,4,8,11,12,13,14)]
 test_watchlist = list(
   test = xgb.DMatrix(
     data = as.matrix(loan_train_num),
-    label = as.numeric(loan_train$loan_status)-1
+    label = as.numeric(loan_train$loan_status)
   )
 )
 
 model_xgb = xgb.train(
   data= xgb.DMatrix(
     data = as.matrix(loan_train_num),
-    label = as.numeric(loan_train$loan_status)-1
+    label = as.numeric(loan_train$loan_status)
   ),
   objective = "binary:logistic",
   nrounds = 350,
@@ -96,7 +95,7 @@ for(eta in etas){
       model = xgb.train(
         data= xgb.DMatrix(
           data = as.matrix(loan_train_num),
-          label = as.numeric(loan_train$loan_status)-1
+          label = as.numeric(loan_train$loan_status)
         ),
         objective = "binary:logistic",
         nrounds = 350,
@@ -116,7 +115,7 @@ gbm<-gbm_perf[which(gbm_perf[,4]>=max(gbm_perf[,4])) ,]
 model_xgb_grid = xgb.train(
   data= xgb.DMatrix(
     data = as.matrix(loan_train_num),
-    label = as.numeric(loan_train$loan_status)-1
+    label = as.numeric(loan_train$loan_status)
   ),
   objective = "binary:logistic",
   nrounds = 350,
@@ -165,7 +164,6 @@ results= data.frame(Model=character(0),
                     GC=numeric(0),
                     stringsAsFactors = FALSE  
 )
-
 
 
 result<-comparison(model_glm,loan_test$loan_status,loan_test,"logistic regression")
