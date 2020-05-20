@@ -8,7 +8,7 @@ dim(loan)
 head(loan)
 str(loan)
 table(loan$loan_status,loan$inq_last_6mths)
-loan<-loan[,c(3,6,7,8,9,10,12,14,17,21,25,28,33,34,39)]
+loan<-loan[,c(3,6,7,8,9,10,12,14,17,21,25,28,33,34)]
 
 library(tidyr)
 library(dplyr)
@@ -29,9 +29,9 @@ table(loan$loan_status,loan$term)[2,]/(colMeans(table(loan$loan_status,loan$term
 # plots
 table(loan$loan_status,loan$emp_length)
 barplot(table(loan$loan_status,loan$emp_length)[,1:11],main="Employment length influence on repaid",
-        names=c("< 1",1,"10+",2,3,4,5,6,7,8,9)) #without n/a
+        names=c("< 1",1,"10+",2,3,4,5,6,7,8,9),las=2) #without n/a
 barplot(table(loan$loan_status,loan$term),main="Loan repayment date")
-barplot(table(loan$loan_status, loan$grade),main="Loan grades")
+barplot(table(loan$loan_status, loan$grade),main="Loan grades",las=2)
 
 status<-loan$loan_status
 interaction.plot(loan$grade, status ,loan$loan_amnt, xlab = "Grade",ylab="Amount of money requested by the borrower"  )
@@ -53,6 +53,5 @@ table(loan_test$loan_status)
  
 
 library(knitr)
-#knit()
 rmarkdown::render('LendingClub.Rmd')
 
