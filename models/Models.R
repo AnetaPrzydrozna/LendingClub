@@ -12,13 +12,12 @@ library(smbinning)
 ######################################### Logistic Regression model
 model_glm<-glm(loan_train$loan_status~., family = "binomial",data=loan_train) 
 #summary(model_glm)
-step_glm<-stepAIC(model_glm ,steps =500) 
+step_glm<-stepAIC(model_glm ,steps =1000) 
 model_step<-glm( formula =step_glm$formula , family = "binomial",data=loan_train)  #logistic regression stepwise
 #model_step<-train(formula=step_glm$formula , method = "glmnet",data=loan_train)
 
 
-
-#########################################    logistic regression in subinning, Optimal Binning for Scoring Modeling
+#########################################    logistic regression in smbinning, Optimal Binning for Scoring Modeling
 #inspired: http://r-statistics.co/Logistic-Regression-With-R.html
 
 
